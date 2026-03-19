@@ -6,11 +6,11 @@ export default function Footer() {
       <div className="max-w-4xl mx-auto">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-8">
           <Image
-            src="/logo-asociacion.jpg"
-            alt="Logo Asociación Civil Hospital San Martín"
-            width={56}
-            height={56}
-            className="rounded object-contain bg-white p-1"
+            src="/logo-asociacion.png"
+            alt="Logo ACASO - Asociación Civil Hospital San Martín"
+            width={64}
+            height={64}
+            className="object-contain"
           />
           <div>
             <p className="font-bold text-base leading-snug">

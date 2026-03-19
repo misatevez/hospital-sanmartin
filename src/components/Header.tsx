@@ -7,11 +7,11 @@ export default function Header() {
       <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Image
-            src="/logo-asociacion.jpg"
-            alt="Logo Asociación Civil Hospital San Martín"
-            width={44}
-            height={44}
-            className="rounded object-contain bg-white p-0.5"
+            src="/logo-asociacion.png"
+            alt="Logo ACASO - Asociación Civil Hospital San Martín"
+            width={48}
+            height={48}
+            className="object-contain"
           />
           <div>
             <p className="text-white font-semibold text-sm tracking-wide uppercase leading-tight">
