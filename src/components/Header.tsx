@@ -11,7 +11,7 @@ export default function Header() {
             alt="Logo ACASO - Asociación Civil Hospital San Martín"
             width={48}
             height={48}
-            className="object-contain"
+            className="object-contain bg-white rounded p-1"
           />
           <div>
             <p className="text-white font-semibold text-sm tracking-wide uppercase leading-tight">

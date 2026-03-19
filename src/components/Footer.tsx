@@ -10,7 +10,7 @@ export default function Footer() {
             alt="Logo ACASO - Asociación Civil Hospital San Martín"
             width={64}
             height={64}
-            className="object-contain"
+            className="object-contain bg-white rounded p-1"
           />
           <div>
             <p className="font-bold text-base leading-snug">
