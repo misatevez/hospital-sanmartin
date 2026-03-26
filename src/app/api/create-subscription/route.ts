@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import MercadoPago, { PreApproval } from 'mercadopago'
-import { getSupabase } from '@/lib/supabase'
+import { getSupabase, isSupabaseConfigured } from '@/lib/supabase'
 
 const client = new MercadoPago({
   accessToken: process.env.MP_ACCESS_TOKEN!,
@@ -36,19 +36,21 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // 2. Verificar duplicados — un email no puede tener dos suscripciones activas
-    const { data: existing } = await getSupabase()
-      .from('subscriptions')
-      .select('id')
-      .eq('email', email)
-      .in('status', ['pending', 'authorized'])
-      .maybeSingle()
+    // 2. Verificar duplicados (solo si Supabase está configurado)
+    if (isSupabaseConfigured()) {
+      const { data: existing } = await getSupabase()
+        .from('subscriptions')
+        .select('id')
+        .eq('email', email)
+        .in('status', ['pending', 'authorized'])
+        .maybeSingle()
 
-    if (existing) {
-      return NextResponse.json(
-        { error: 'Ya existe una suscripción activa para este email' },
-        { status: 409 }
-      )
+      if (existing) {
+        return NextResponse.json(
+          { error: 'Ya existe una suscripción activa para este email' },
+          { status: 409 }
+        )
+      }
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? ''
@@ -68,26 +70,27 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    // 4. Guardar suscriptor en Supabase
-    const { error: dbError } = await getSupabase().from('subscriptions').insert({
-      nombre,
-      apellido,
-      email,
-      telefono,
-      plan: planNombre,
-      monto: montoARS,
-      preapproval_id: subscription.id!,
-      status: 'pending',
-    })
+    // 4. Guardar en Supabase (solo si está configurado)
+    if (isSupabaseConfigured()) {
+      const { error: dbError } = await getSupabase().from('subscriptions').insert({
+        nombre,
+        apellido,
+        email,
+        telefono,
+        plan: planNombre,
+        monto: montoARS,
+        preapproval_id: subscription.id!,
+        status: 'pending',
+      })
 
-    if (dbError) {
-      console.error('[create-subscription] Supabase error:', dbError)
-      // 23505 = violación de índice único parcial (email activo duplicado)
-      if (dbError.code === '23505') {
-        return NextResponse.json(
-          { error: 'Ya existe una suscripción activa para este email' },
-          { status: 409 }
-        )
+      if (dbError) {
+        console.error('[create-subscription] Supabase error:', dbError)
+        if (dbError.code === '23505') {
+          return NextResponse.json(
+            { error: 'Ya existe una suscripción activa para este email' },
+            { status: 409 }
+          )
+        }
       }
     }
 
