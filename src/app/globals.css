@@ -5,3 +5,22 @@
 html {
   scroll-behavior: smooth;
 }
+
+@keyframes pulse-cta {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(46, 139, 87, 0.5);
+  }
+  50% {
+    transform: scale(1.04);
+    box-shadow: 0 0 0 10px rgba(46, 139, 87, 0);
+  }
+}
+
+.animate-pulse-cta {
+  animation: pulse-cta 2.5s ease-in-out infinite;
+}
+
+.animate-pulse-cta:hover {
+  animation: none;
+}

@@ -33,7 +33,7 @@ export default function Hero() {
 
         <Link
           href="#planes"
-          className="inline-block bg-[#2e8b57] hover:bg-[#256b44] active:scale-95 text-white font-bold text-lg px-12 py-4 rounded-xl transition-all duration-200 shadow-xl"
+          className="inline-block bg-[#2e8b57] hover:bg-[#256b44] active:scale-95 text-white font-bold text-lg px-12 py-4 rounded-xl transition-all duration-200 shadow-xl animate-pulse-cta"
         >
           Sumarme como Socio Benefactor
         </Link>
