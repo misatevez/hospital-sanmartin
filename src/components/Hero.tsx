@@ -1,18 +1,19 @@
+import Image from 'next/image'
 import Link from 'next/link'
 
 export default function Hero() {
   return (
-    <section
-      className="relative min-h-screen flex items-center justify-center text-white pt-16"
-      style={{
-        background: 'linear-gradient(145deg, #081d36 0%, #1a3a5c 55%, #0d2a47 100%)',
-      }}
-    >
-      {/* Subtle decorative glow */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/3 left-1/3 w-[500px] h-[500px] rounded-full bg-blue-500 opacity-5 blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-72 h-72 rounded-full bg-green-500 opacity-5 blur-3xl" />
-      </div>
+    <section className="relative min-h-screen flex items-center justify-center text-white pt-16">
+      {/* Background image */}
+      <Image
+        src="/hospital-hero.jpg"
+        alt="Hospital San Martín"
+        fill
+        className="object-cover object-center"
+        priority
+      />
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-[#081d36]/75" />
 
       <div className="relative z-10 max-w-3xl mx-auto px-4 text-center">
         <p className="text-[#2e8b57] text-xs font-bold tracking-widest uppercase mb-6">
