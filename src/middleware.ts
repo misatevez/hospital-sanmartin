@@ -2,6 +2,8 @@ import { createServerClient } from '@supabase/ssr'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function middleware(req: NextRequest) {
+  const isLoginPage = req.nextUrl.pathname === '/admin/login'
+
   let response = NextResponse.next({ request: req })
 
   try {
@@ -25,20 +27,16 @@ export async function middleware(req: NextRequest) {
 
     const { data: { user } } = await supabase.auth.getUser()
 
-    // Si no hay sesión y trata de acceder al admin → redirigir al login
-    if (!user && !req.nextUrl.pathname.startsWith('/admin/login')) {
+    if (!user && !isLoginPage) {
       return NextResponse.redirect(new URL('/admin/login', req.url))
     }
 
-    // Si ya tiene sesión y va al login → redirigir al dashboard
-    if (user && req.nextUrl.pathname === '/admin/login') {
+    if (user && isLoginPage) {
       return NextResponse.redirect(new URL('/admin', req.url))
     }
   } catch {
-    // Si Supabase falla, dejamos pasar al login
-    if (!req.nextUrl.pathname.startsWith('/admin/login')) {
-      return NextResponse.redirect(new URL('/admin/login', req.url))
-    }
+    // En caso de error con Supabase, dejar pasar sin redirigir
+    return response
   }
 
   return response
