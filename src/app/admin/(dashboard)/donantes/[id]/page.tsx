@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase-server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 
+export const dynamic = 'force-dynamic'
+
 const STATUS_LABEL: Record<string, { label: string; className: string }> = {
   authorized: { label: 'Activo',    className: 'bg-green-100 text-green-700' },
   pending:    { label: 'Pendiente', className: 'bg-yellow-100 text-yellow-700' },
