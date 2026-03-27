@@ -148,7 +148,7 @@ export default function ModalSuscripcion({ plan, onClose }: Props) {
 
           <div>
             <label className="block text-sm font-medium text-[#1f2937] mb-1">
-              Teléfono (WhatsApp)
+              Teléfono de WhatsApp
             </label>
             <input
               type="tel"
@@ -159,6 +159,9 @@ export default function ModalSuscripcion({ plan, onClose }: Props) {
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563a8]"
               disabled={loading}
             />
+            <p className="text-xs text-[#6b7280] mt-1">
+              📲 Ingresá el número con el que usás WhatsApp. Lo usaremos para validar tu comprobante de pago.
+            </p>
           </div>
 
           {error && (
