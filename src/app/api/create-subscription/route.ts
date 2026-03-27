@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
         .from('subscriptions')
         .select('id')
         .eq('email', email)
-        .in('status', ['pending', 'authorized'])
+        .in('status', ['authorized'])
         .maybeSingle()
 
       if (existing) {
