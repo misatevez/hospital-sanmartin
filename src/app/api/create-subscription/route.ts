@@ -99,7 +99,12 @@ export async function POST(req: NextRequest) {
       preapproval_id: subscription.id,
     })
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Error desconocido'
+    let message = 'Error desconocido'
+    if (err instanceof Error) {
+      message = err.message
+    } else if (err && typeof err === 'object') {
+      message = JSON.stringify(err)
+    }
     console.error('[create-subscription]', err)
     return NextResponse.json({ error: message }, { status: 500 })
   }
