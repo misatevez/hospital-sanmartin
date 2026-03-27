@@ -11,6 +11,7 @@ interface Props {
 const links = [
   { href: '/admin', label: 'Dashboard', icon: '▦' },
   { href: '/admin/donantes', label: 'Donantes', icon: '👥' },
+  { href: '/admin/whatsapp', label: 'WhatsApp', icon: '📱' },
 ]
 
 export default function AdminSidebar({ userEmail }: Props) {
