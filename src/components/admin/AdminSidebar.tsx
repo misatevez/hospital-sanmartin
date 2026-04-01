@@ -10,7 +10,8 @@ interface Props {
 
 const links = [
   { href: '/admin', label: 'Dashboard', icon: '▦' },
-  { href: '/admin/donantes', label: 'Donantes', icon: '👥' },
+  { href: '/admin/socios', label: 'Socios', icon: '👥' },
+  { href: '/admin/donantes', label: 'Donantes', icon: '❤️' },
   { href: '/admin/whatsapp', label: 'WhatsApp', icon: '📱' },
 ]
 
@@ -35,7 +36,7 @@ export default function AdminSidebar({ userEmail }: Props) {
       {/* Navegación */}
       <nav className="flex-1 space-y-1">
         {links.map((link) => {
-          const active = pathname === link.href
+          const active = link.href === '/admin' ? pathname === '/admin' : pathname.startsWith(link.href)
           return (
             <Link
               key={link.href}

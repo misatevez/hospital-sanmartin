@@ -1,5 +1,6 @@
 export type SubscriptionStatus = 'pending' | 'authorized' | 'paused' | 'cancelled'
 export type PaymentStatus = 'processed' | 'in_process' | 'rejected' | 'cancelled'
+export type DonationStatus = 'pending' | 'approved' | 'rejected'
 
 export interface Database {
   public: {
@@ -110,6 +111,36 @@ export interface Database {
             referencedColumns: ['id']
           }
         ]
+      }
+    }
+      donations: {
+        Row: {
+          id: string
+          nombre: string
+          apellido: string
+          email: string
+          telefono: string
+          monto: number
+          mp_payment_id: string | null
+          status: DonationStatus
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          nombre: string
+          apellido: string
+          email: string
+          telefono: string
+          monto?: number
+          mp_payment_id?: string | null
+          status?: DonationStatus
+          created_at?: string
+        }
+        Update: {
+          mp_payment_id?: string | null
+          status?: DonationStatus
+        }
+        Relationships: []
       }
     }
     Views: Record<string, never>

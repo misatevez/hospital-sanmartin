@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import MercadoPago, { PreApproval } from 'mercadopago'
+import MercadoPago, { PreApproval, Payment } from 'mercadopago'
 import { getSupabase } from '@/lib/supabase'
-import type { SubscriptionStatus } from '@/types/database'
+import type { SubscriptionStatus, DonationStatus } from '@/types/database'
 
 const client = new MercadoPago({
   accessToken: process.env.MP_ACCESS_TOKEN!,
 })
 
 const preApproval = new PreApproval(client)
+const payment = new Payment(client)
 
 export async function POST(req: NextRequest) {
   try {
@@ -52,6 +53,32 @@ export async function POST(req: NextRequest) {
           subscription_id: sub.id,
           mp_payment_id: data.id,
         })
+      }
+    }
+
+    // Pagos únicos (donaciones)
+    if (type === 'payment' && data?.id) {
+      const p = await payment.get({ id: data.id })
+      const meta = p.metadata as Record<string, string> | undefined
+
+      if (meta?.tipo === 'donacion') {
+        const statusMap: Record<string, DonationStatus> = {
+          approved: 'approved',
+          rejected: 'rejected',
+          cancelled: 'rejected',
+        }
+        const donationStatus: DonationStatus = statusMap[p.status ?? ''] ?? 'pending'
+        const email = p.payer?.email ?? ''
+
+        await getSupabase()
+          .from('donations')
+          .update({ mp_payment_id: String(data.id), status: donationStatus })
+          .eq('email', email)
+          .eq('status', 'pending')
+          .order('created_at', { ascending: false })
+          .limit(1)
+
+        console.log('[webhook/mp] donación actualizada:', { mp_payment_id: data.id, status: donationStatus })
       }
     }
 
