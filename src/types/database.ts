@@ -112,7 +112,6 @@ export interface Database {
           }
         ]
       }
-    }
       donations: {
         Row: {
           id: string
