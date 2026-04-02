@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
     let message = 'Error desconocido'
     if (err instanceof Error) message = err.message
     else if (err && typeof err === 'object') message = JSON.stringify(err)
-    console.error('[create-donation] full error:', JSON.stringify(err, null, 2))
-    return NextResponse.json({ error: message, detail: err }, { status: 500 })
+    console.error('[create-donation]', err)
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
