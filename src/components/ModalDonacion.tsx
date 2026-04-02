@@ -203,6 +203,7 @@ export default function ModalDonacion({ onClose }: Props) {
                     className="flex flex-col items-center gap-2 border-2 border-gray-200 hover:border-[#009ee3] rounded-xl p-4 transition-colors"
                   >
                     <img src="/mp-logo.png" alt="Mercado Pago" className="h-8 object-contain" />
+                    <span className="text-xs text-[#6b7280]">Mercado Pago</span>
                   </button>
                   <button
                     onClick={() => elegirMetodo('tarjeta')}
