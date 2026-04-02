@@ -8,11 +8,14 @@ interface Props {
 }
 
 const MONTO = 2000
+type Metodo = 'mercadopago' | 'tarjeta' | null
 
 export default function ModalDonacion({ onClose }: Props) {
   const [nombre, setNombre] = useState('')
   const [apellido, setApellido] = useState('')
+  const [email, setEmail] = useState('')
   const [telefono, setTelefono] = useState('')
+  const [metodo, setMetodo] = useState<Metodo>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
@@ -29,16 +32,45 @@ export default function ModalDonacion({ onClose }: Props) {
     }
   }, [])
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async function handleSubmit(data: any) {
-    if (!nombre || !apellido || !telefono) {
-      setError('Por favor completá nombre, apellido y teléfono.')
-      return
+  function validarDatos() {
+    if (!nombre || !apellido || !email || !telefono) {
+      setError('Por favor completá todos los campos.')
+      return false
     }
+    setError('')
+    return true
+  }
 
+  function elegirMetodo(m: Metodo) {
+    if (!validarDatos()) return
+    setMetodo(m)
+  }
+
+  async function handleMercadoPago() {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/create-donation-mp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre, apellido, email, telefono }),
+      })
+      const data = await res.json()
+      if (!res.ok || data.error) {
+        setError(data.error ?? 'Ocurrió un error. Intentá de nuevo.')
+        setLoading(false)
+        return
+      }
+      window.location.href = data.init_point
+    } catch {
+      setError('No se pudo conectar. Verificá tu conexión e intentá de nuevo.')
+      setLoading(false)
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async function handleTarjeta(data: any) {
     setError('')
     setLoading(true)
-
     try {
       const res = await fetch('/api/create-donation', {
         method: 'POST',
@@ -52,15 +84,12 @@ export default function ModalDonacion({ onClose }: Props) {
           installments: data.installments,
         }),
       })
-
       const result = await res.json()
-
       if (!res.ok || result.error) {
         setError(result.error ?? 'Ocurrió un error. Intentá de nuevo.')
         setLoading(false)
         return
       }
-
       setSuccess(true)
     } catch {
       setError('No se pudo conectar. Verificá tu conexión e intentá de nuevo.')
@@ -77,6 +106,7 @@ export default function ModalDonacion({ onClose }: Props) {
         className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Header */}
         <div className="flex items-start justify-between mb-6">
           <div>
             <h2 className="text-xl font-bold text-[#1a3a5c]">Donación única</h2>
@@ -94,6 +124,7 @@ export default function ModalDonacion({ onClose }: Props) {
           </button>
         </div>
 
+        {/* Éxito */}
         {success ? (
           <div className="text-center py-6">
             <div className="text-5xl mb-4">❤️</div>
@@ -110,6 +141,7 @@ export default function ModalDonacion({ onClose }: Props) {
           </div>
         ) : (
           <div className="space-y-4">
+            {/* Datos personales */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-[#1f2937] mb-1">Nombre</label>
@@ -118,8 +150,8 @@ export default function ModalDonacion({ onClose }: Props) {
                   value={nombre}
                   onChange={(e) => setNombre(e.target.value)}
                   placeholder="Juan"
-                  disabled={loading}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563a8]"
+                  disabled={loading || !!metodo}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563a8] disabled:bg-gray-50"
                 />
               </div>
               <div>
@@ -129,10 +161,22 @@ export default function ModalDonacion({ onClose }: Props) {
                   value={apellido}
                   onChange={(e) => setApellido(e.target.value)}
                   placeholder="García"
-                  disabled={loading}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563a8]"
+                  disabled={loading || !!metodo}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563a8] disabled:bg-gray-50"
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-[#1f2937] mb-1">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="juan@email.com"
+                disabled={loading || !!metodo}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563a8] disabled:bg-gray-50"
+              />
             </div>
 
             <div>
@@ -142,18 +186,69 @@ export default function ModalDonacion({ onClose }: Props) {
                 value={telefono}
                 onChange={(e) => setTelefono(e.target.value)}
                 placeholder="+54 9 341 000 0000"
-                disabled={loading}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563a8]"
+                disabled={loading || !!metodo}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563a8] disabled:bg-gray-50"
               />
             </div>
 
             {error && <p className="text-red-500 text-sm">{error}</p>}
 
-            <CardPayment
-              initialization={{ amount: MONTO }}
-              customization={{ paymentMethods: { maxInstallments: 1, minInstallments: 1 } }}
-              onSubmit={handleSubmit}
-            />
+            {/* Selector de método */}
+            {!metodo && (
+              <>
+                <p className="text-sm font-medium text-[#1f2937] pt-1">¿Cómo querés pagar?</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => elegirMetodo('mercadopago')}
+                    className="flex flex-col items-center gap-2 border-2 border-gray-200 hover:border-[#009ee3] rounded-xl p-4 transition-colors"
+                  >
+                    <img
+                      src="https://http2.mlstatic.com/frontend-assets/mp-web-navigation/ui-navigation/5.21.22/mercadopago/logo__large@2x.png"
+                      alt="Mercado Pago"
+                      className="h-6 object-contain"
+                    />
+                    <span className="text-xs text-[#6b7280]">Mercado Pago</span>
+                  </button>
+                  <button
+                    onClick={() => elegirMetodo('tarjeta')}
+                    className="flex flex-col items-center gap-2 border-2 border-gray-200 hover:border-[#2563a8] rounded-xl p-4 transition-colors"
+                  >
+                    <span className="text-2xl">💳</span>
+                    <span className="text-xs text-[#6b7280]">Tarjeta de crédito / débito</span>
+                  </button>
+                </div>
+              </>
+            )}
+
+            {/* Volver a elegir método */}
+            {metodo && (
+              <button
+                onClick={() => { setMetodo(null); setError('') }}
+                className="text-xs text-[#2563a8] hover:underline"
+              >
+                ← Cambiar método de pago
+              </button>
+            )}
+
+            {/* Mercado Pago */}
+            {metodo === 'mercadopago' && (
+              <button
+                onClick={handleMercadoPago}
+                disabled={loading}
+                className="w-full bg-[#009ee3] hover:bg-[#0088c7] disabled:bg-[#9ca3af] text-white font-semibold py-3 rounded-xl transition-colors duration-200"
+              >
+                {loading ? 'Redirigiendo...' : 'Continuar con Mercado Pago →'}
+              </button>
+            )}
+
+            {/* Tarjeta embebida */}
+            {metodo === 'tarjeta' && (
+              <CardPayment
+                initialization={{ amount: MONTO }}
+                customization={{ paymentMethods: { maxInstallments: 1, minInstallments: 1 } }}
+                onSubmit={handleTarjeta}
+              />
+            )}
           </div>
         )}
       </div>
