@@ -19,12 +19,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Faltan campos requeridos' }, { status: 400 })
     }
 
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? ''
+
     const result = await payment.create({
       body: {
         payer: { email },
         token,
         transaction_amount: MONTO,
         installments: installments ?? 1,
+        notification_url: `${baseUrl}/api/webhook/mp`,
       },
     })
 
