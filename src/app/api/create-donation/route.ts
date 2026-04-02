@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import MercadoPago, { Preference } from 'mercadopago'
+import MercadoPago, { Payment } from 'mercadopago'
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase'
 
 const MONTO = 2000
@@ -9,56 +9,54 @@ const client = new MercadoPago({
   options: { timeout: 5000 },
 })
 
-const preference = new Preference(client)
+const payment = new Payment(client)
 
 export async function POST(req: NextRequest) {
   try {
-    const { nombre, apellido, email, telefono } = await req.json()
+    const { nombre, apellido, email, telefono, token, installments } = await req.json()
 
-    if (!nombre || !apellido || !email || !telefono) {
+    if (!nombre || !apellido || !email || !telefono || !token) {
       return NextResponse.json({ error: 'Faltan campos requeridos' }, { status: 400 })
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? ''
-
-    // Crear preference de pago único en Mercado Pago
-    const result = await preference.create({
+    const result = await payment.create({
       body: {
-        items: [
-          {
-            id: 'donacion-unica',
-            title: 'Donación — Hospital San Martín',
-            quantity: 1,
-            unit_price: MONTO,
-            currency_id: 'ARS',
-          },
-        ],
-        payer: { name: nombre, surname: apellido, email },
-        back_urls: {
-          success: `${baseUrl}/donacion/gracias`,
-          failure: `${baseUrl}/donacion/error`,
-          pending: `${baseUrl}/donacion/gracias`,
-        },
-        auto_return: 'approved',
-        notification_url: `${baseUrl}/api/webhook/mp`,
-        metadata: { tipo: 'donacion', telefono },
+        transaction_amount: MONTO,
+        token,
+        installments: installments ?? 1,
+        payer: { email },
+        metadata: { tipo: 'donacion', nombre, apellido, telefono },
       },
     })
 
-    // Guardar en Supabase con status pending
+    const status = result.status
+
+    // Guardar en Supabase
     if (isSupabaseConfigured()) {
+      const donationStatus =
+        status === 'approved' ? 'approved' :
+        status === 'rejected' ? 'rejected' : 'pending'
+
       const { error: dbError } = await getSupabase().from('donations').insert({
         nombre,
         apellido,
         email,
         telefono,
         monto: MONTO,
-        status: 'pending',
+        mp_payment_id: String(result.id),
+        status: donationStatus,
       })
       if (dbError) console.error('[create-donation] Supabase error:', dbError)
     }
 
-    return NextResponse.json({ init_point: result.init_point })
+    if (status === 'rejected') {
+      return NextResponse.json(
+        { error: 'El pago fue rechazado. Verificá los datos de tu tarjeta.' },
+        { status: 400 }
+      )
+    }
+
+    return NextResponse.json({ success: true, id: result.id, status })
   } catch (err: unknown) {
     let message = 'Error desconocido'
     if (err instanceof Error) message = err.message

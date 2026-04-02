@@ -1,43 +1,67 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { initMercadoPago, CardPayment } from '@mercadopago/sdk-react'
 
 interface Props {
   onClose: () => void
 }
 
+const MONTO = 2000
+
 export default function ModalDonacion({ onClose }: Props) {
-  const [form, setForm] = useState({ nombre: '', apellido: '', email: '', telefono: '' })
+  const [nombre, setNombre] = useState('')
+  const [apellido, setApellido] = useState('')
+  const [telefono, setTelefono] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState(false)
+  const initialized = useRef(false)
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
-  }
+  useEffect(() => {
+    if (!initialized.current) {
+      initMercadoPago(process.env.NEXT_PUBLIC_MP_PUBLIC_KEY!)
+      initialized.current = true
+    }
+    return () => {
+      // @ts-ignore
+      window?.cardPaymentBrickController?.unmount()
+    }
+  }, [])
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setError('')
-
-    if (!form.nombre || !form.apellido || !form.email || !form.telefono) {
-      setError('Por favor completá todos los campos.')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async function handleSubmit(data: any) {
+    if (!nombre || !apellido || !telefono) {
+      setError('Por favor completá nombre, apellido y teléfono.')
       return
     }
 
+    setError('')
     setLoading(true)
+
     try {
       const res = await fetch('/api/create-donation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          nombre,
+          apellido,
+          telefono,
+          email: data.payer.email,
+          token: data.token,
+          installments: data.installments,
+        }),
       })
-      const data = await res.json()
-      if (!res.ok) {
-        setError(data.error ?? 'Ocurrió un error. Intentá de nuevo.')
+
+      const result = await res.json()
+
+      if (!res.ok || result.error) {
+        setError(result.error ?? 'Ocurrió un error. Intentá de nuevo.')
         setLoading(false)
         return
       }
-      window.location.href = data.init_point
+
+      setSuccess(true)
     } catch {
       setError('No se pudo conectar. Verificá tu conexión e intentá de nuevo.')
       setLoading(false)
@@ -50,7 +74,7 @@ export default function ModalDonacion({ onClose }: Props) {
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between mb-6">
@@ -70,57 +94,68 @@ export default function ModalDonacion({ onClose }: Props) {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+        {success ? (
+          <div className="text-center py-6">
+            <div className="text-5xl mb-4">❤️</div>
+            <h3 className="text-lg font-bold text-[#1a3a5c] mb-2">¡Muchas gracias!</h3>
+            <p className="text-[#4b5563] text-sm">
+              Tu donación fue procesada con éxito. Tu aporte ayuda a los pacientes del Hospital San Martín.
+            </p>
+            <button
+              onClick={onClose}
+              className="mt-6 bg-[#2563a8] hover:bg-[#1a4f8f] text-white font-semibold px-6 py-2 rounded-xl transition-colors"
+            >
+              Cerrar
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-[#1f2937] mb-1">Nombre</label>
+                <input
+                  type="text"
+                  value={nombre}
+                  onChange={(e) => setNombre(e.target.value)}
+                  placeholder="Juan"
+                  disabled={loading}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563a8]"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#1f2937] mb-1">Apellido</label>
+                <input
+                  type="text"
+                  value={apellido}
+                  onChange={(e) => setApellido(e.target.value)}
+                  placeholder="García"
+                  disabled={loading}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563a8]"
+                />
+              </div>
+            </div>
+
             <div>
-              <label className="block text-sm font-medium text-[#1f2937] mb-1">Nombre</label>
+              <label className="block text-sm font-medium text-[#1f2937] mb-1">Teléfono de WhatsApp</label>
               <input
-                type="text" name="nombre" value={form.nombre} onChange={handleChange}
-                placeholder="Juan" disabled={loading}
+                type="tel"
+                value={telefono}
+                onChange={(e) => setTelefono(e.target.value)}
+                placeholder="+54 9 341 000 0000"
+                disabled={loading}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563a8]"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-[#1f2937] mb-1">Apellido</label>
-              <input
-                type="text" name="apellido" value={form.apellido} onChange={handleChange}
-                placeholder="García" disabled={loading}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563a8]"
-              />
-            </div>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-[#1f2937] mb-1">Email</label>
-            <input
-              type="email" name="email" value={form.email} onChange={handleChange}
-              placeholder="juan@email.com" disabled={loading}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563a8]"
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+
+            <CardPayment
+              initialization={{ amount: MONTO }}
+              customization={{ paymentMethods: { maxInstallments: 1, minInstallments: 1 } }}
+              onSubmit={handleSubmit}
             />
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-[#1f2937] mb-1">Teléfono de WhatsApp</label>
-            <input
-              type="tel" name="telefono" value={form.telefono} onChange={handleChange}
-              placeholder="+54 9 341 000 0000" disabled={loading}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563a8]"
-            />
-          </div>
-
-          {error && <p className="text-red-500 text-sm">{error}</p>}
-
-          <button
-            type="submit" disabled={loading}
-            className="w-full bg-[#2e8b57] hover:bg-[#256b44] disabled:bg-[#9ca3af] text-white font-semibold py-3 rounded-xl transition-colors duration-200"
-          >
-            {loading ? 'Redirigiendo a Mercado Pago...' : 'Donar $2.000'}
-          </button>
-
-          <p className="text-center text-xs text-[#9ca3af]">
-            Serás redirigido a Mercado Pago para completar el pago de forma segura.
-          </p>
-        </form>
+        )}
       </div>
     </div>
   )
