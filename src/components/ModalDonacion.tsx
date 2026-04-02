@@ -202,8 +202,12 @@ export default function ModalDonacion({ onClose }: Props) {
                     onClick={() => elegirMetodo('mercadopago')}
                     className="flex flex-col items-center gap-2 border-2 border-gray-200 hover:border-[#009ee3] rounded-xl p-4 transition-colors"
                   >
-                    <span className="text-2xl">🔵</span>
-                    <span className="text-xs font-semibold text-[#009ee3]">Mercado Pago</span>
+                    <svg width="80" height="20" viewBox="0 0 80 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="10" cy="10" r="10" fill="#009ee3"/>
+                      <text x="10" y="14" textAnchor="middle" fill="white" fontSize="11" fontWeight="bold">M</text>
+                      <text x="46" y="14" textAnchor="middle" fill="#009ee3" fontSize="9" fontWeight="600">mercadopago</text>
+                    </svg>
+                    <span className="text-xs text-[#6b7280]">Mercado Pago</span>
                   </button>
                   <button
                     onClick={() => elegirMetodo('tarjeta')}
