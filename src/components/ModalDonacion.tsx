@@ -82,6 +82,7 @@ export default function ModalDonacion({ onClose }: Props) {
           email: data.payer.email,
           token: data.token,
           installments: data.installments,
+          payment_method_id: data.payment_method_id,
         }),
       })
       const result = await res.json()

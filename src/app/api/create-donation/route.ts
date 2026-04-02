@@ -13,7 +13,7 @@ const payment = new Payment(client)
 
 export async function POST(req: NextRequest) {
   try {
-    const { nombre, apellido, email, telefono, token, installments } = await req.json()
+    const { nombre, apellido, email, telefono, token, installments, payment_method_id } = await req.json()
 
     if (!nombre || !apellido || !email || !telefono || !token) {
       return NextResponse.json({ error: 'Faltan campos requeridos' }, { status: 400 })
@@ -24,6 +24,8 @@ export async function POST(req: NextRequest) {
         transaction_amount: MONTO,
         token,
         installments: installments ?? 1,
+        description: 'Donación — Hospital San Martín',
+        ...(payment_method_id ? { payment_method_id } : {}),
         payer: { email },
         metadata: { tipo: 'donacion', nombre, apellido, telefono },
       },
