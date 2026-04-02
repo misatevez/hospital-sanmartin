@@ -21,13 +21,10 @@ export async function POST(req: NextRequest) {
 
     const result = await payment.create({
       body: {
-        transaction_amount: MONTO,
-        token,
-        installments: installments ?? 1,
-        description: 'Donación — Hospital San Martín',
-        ...(payment_method_id ? { payment_method_id } : {}),
         payer: { email },
-        metadata: { tipo: 'donacion', nombre, apellido, telefono },
+        token,
+        transaction_amount: MONTO,
+        installments: installments ?? 1,
       },
     })
 
