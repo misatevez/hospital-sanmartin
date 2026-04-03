@@ -5,7 +5,6 @@ import type { SubscriptionStatus, DonationStatus } from '@/types/database'
 
 const client = new MercadoPago({
   accessToken: process.env.MP_ACCESS_TOKEN!,
-  options: { locale: 'es-AR' },
 })
 
 const preApproval = new PreApproval(client)
