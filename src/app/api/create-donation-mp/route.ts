@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import MercadoPago, { Preference } from 'mercadopago'
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase'
 
-const MONTO = 2000
+const MONTO = 100
 
 const client = new MercadoPago({
   accessToken: process.env.MP_ACCESS_TOKEN!,
