@@ -23,7 +23,7 @@ export default function ModalDonacion({ onClose }: Props) {
 
   useEffect(() => {
     if (!initialized.current) {
-      initMercadoPago(process.env.NEXT_PUBLIC_MP_PUBLIC_KEY!)
+      initMercadoPago(process.env.NEXT_PUBLIC_MP_PUBLIC_KEY!, { locale: 'es-AR' })
       initialized.current = true
     }
     return () => {
