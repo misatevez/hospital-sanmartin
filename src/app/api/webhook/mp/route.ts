@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import MercadoPago, { PreApproval, Payment } from 'mercadopago'
 import { getSupabase } from '@/lib/supabase'
 import type { SubscriptionStatus, DonationStatus } from '@/types/database'
+import { sendWhatsAppReceipt } from '@/lib/whatsapp'
 
 const client = new MercadoPago({
   accessToken: process.env.MP_ACCESS_TOKEN!,
@@ -79,6 +80,15 @@ export async function POST(req: NextRequest) {
           .limit(1)
 
         console.log('[webhook/mp] donación actualizada:', { mp_payment_id: data.id, status: donationStatus })
+
+        if (donationStatus === 'approved' && meta?.telefono && meta?.nombre) {
+          sendWhatsAppReceipt({
+            telefono: String(meta.telefono),
+            nombre: String(meta.nombre),
+            monto: p.transaction_amount ?? 0,
+            paymentId: String(data.id),
+          })
+        }
       }
     }
 
