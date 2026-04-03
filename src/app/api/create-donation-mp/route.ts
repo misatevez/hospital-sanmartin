@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
         },
         auto_return: 'approved',
         notification_url: `${baseUrl}/api/webhook/mp`,
-        metadata: { tipo: 'donacion', telefono, nombre },
+        metadata: { tipo: 'donacion', telefono },
       },
     })
 

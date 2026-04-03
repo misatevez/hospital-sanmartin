@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import MercadoPago, { Payment } from 'mercadopago'
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase'
-import { sendWhatsAppReceipt } from '@/lib/whatsapp'
 
 const MONTO = 100
 
@@ -57,15 +56,6 @@ export async function POST(req: NextRequest) {
         { error: 'El pago fue rechazado. Verificá los datos de tu tarjeta.' },
         { status: 400 }
       )
-    }
-
-    if (status === 'approved') {
-      sendWhatsAppReceipt({
-        telefono,
-        nombre,
-        monto: MONTO,
-        paymentId: String(result.id),
-      })
     }
 
     return NextResponse.json({ success: true, id: result.id, status })
