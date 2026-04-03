@@ -6,7 +6,7 @@ const MONTO = 100
 
 const client = new MercadoPago({
   accessToken: process.env.MP_ACCESS_TOKEN!,
-  options: { timeout: 5000 },
+  options: { timeout: 5000, locale: 'es-AR' },
 })
 
 const payment = new Payment(client)
