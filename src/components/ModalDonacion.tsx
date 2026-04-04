@@ -7,7 +7,7 @@ interface Props {
   onClose: () => void
 }
 
-const MONTO = 100
+const MONTO = 2000
 type Metodo = 'mercadopago' | 'tarjeta' | null
 
 export default function ModalDonacion({ onClose }: Props) {
@@ -112,7 +112,7 @@ export default function ModalDonacion({ onClose }: Props) {
           <div>
             <h2 className="text-xl font-bold text-[#1a3a5c]">Donación única</h2>
             <p className="text-[#2563a8] font-semibold text-lg">
-              $100
+              $2.000
               <span className="text-sm font-normal text-[#6b7280]"> · pago único</span>
             </p>
           </div>
